@@ -1,0 +1,14 @@
+{% load mytags %}
+
+{% if items.paginator.page_range|length > 1 %}
+    <div class="row mt-normal mh-normal">
+        {% for i in items.paginator.page_range %}
+            <form action="{% url url_name %}" method="get">
+                <button class="link page-number {% if i == page %} page-number-selected {% endif %}"
+                        type="submit" name="page" value="{{ i }}">
+                    {{ i }}
+                </button>
+            </form>
+        {% endfor %}
+    </div>
+{% endif %}

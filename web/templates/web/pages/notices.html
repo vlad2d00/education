@@ -1,0 +1,255 @@
+{% extends 'web/pages/basic.html' %}
+{% load static %}
+{% load mytags %}
+
+{% block content %}
+    <div class="col">
+        <div class="card card-middle">
+            <div class="content title text-center">Уведомления</div>
+            <hr class="mt-normal">
+
+            {% get_notice_code_list as notice_codes %}
+
+            {% if notices %}
+                {% for notice in notices %}
+                    <div class="row ph-normal pv-normal">
+                        {% if notice.image_url %}
+                            <div class="icon-medium-round">
+                                <img src="{{ notice.image_url }}" alt="Уведомление">
+                            </div>
+                        {% else %}
+                            <div class="icon-medium color-secondary">{% include notice.image_name %}</div>
+                        {% endif %}
+
+                        <div class="row ml-normal w-100">
+                            <div class="col">
+                                <div class="mr-medium">
+
+                                    <!-- Для персонала и преподавателей -->
+
+                                    {% if notice.code == notice_codes.ADDED_USER_FOR_VERIFICATION %}
+                                        Пользователь
+                                        <a class="link" href="{% url 'user' notice.username %}">
+                                            {{ notice.user_full_name }}</a>
+                                        добавлен в очередь на верификацию.
+
+
+                                    {% elif notice.code == notice_codes.FEEDBACK_LEFT %}
+                                        {% if notice.student_group_name %}
+                                            От студента с группы <b>{{ notice.student_group_name }}</b>
+                                            оставлена обратная связь:<br>
+                                        {% else %}
+                                            Оставлена обратная связь:<br>
+                                        {% endif %}
+                                        <i>{{ notice.feedback_text|truncatechars:255 }}</i>
+
+
+                                    {% elif notice.code == notice_codes.NEED_ISSUE_BADGE_FOR_ACHIEVEMENT %}
+                                        Пользователь
+                                        <a class="link" href="{% url 'user' notice.username %}">
+                                            {{ notice.user_full_name }}</a>
+                                        получил достижение <b>{{ notice.achievement_name }}</b>
+                                        {{ notice.achievement_level }} ур. ранга
+                                        <b class="{% get_rank_css_class notice.achievement_rank_code %}">
+                                            {% get_rank_name notice.achievement_rank_code %}</b>,
+                                        за которое нужно выдать значок.
+
+
+                                    {% elif notice.code == notice_codes.UPDATE_PROJECT_NAME %}
+                                        Пользователь
+                                        <a class="link" href="{% url 'user' notice.username %}">
+                                            {{ notice.user_full_name }}</a>
+                                        изменил тему своего проекта на <b>{{ notice.project_name }}</b>.
+                                        Проект перешел на стадию утверждения.
+
+
+                                    {% elif notice.code == notice_codes.TASK_COMMENT_LEFT %}
+                                        Пользователь
+                                        <a class="link" href="{% url 'user' notice.username %}">
+                                            {{ notice.user_full_name }}</a>
+                                        оставил комментарий к задаче
+                                        <a class="link" href="{% url 'task' notice.task_id %}">
+                                            {{ notice.task_name }}</a>.
+
+
+                                    {% elif notice.code == notice_codes.TEST_COMMENT_LEFT %}
+                                        Пользователь
+                                        <a class="link" href="{% url 'user' notice.username %}">
+                                            {{ notice.user_full_name }}</a>
+                                        оставил комментарий к тестированию
+                                        <a class="link" href="{% url 'test' notice.test_id %}">
+                                            {{ notice.test_name }}</a>.
+
+
+
+                                    <!-- Для студентов личные -->
+
+                                    {% elif notice.code == notice_codes.USER_VERIFIED %}
+                                        Ваш аккаунт был верифицирован.
+                                        Теперь вы можете пользоваться приложением без ограничений.
+
+
+                                    {% elif notice.code == notice_codes.HAPPY_BIRTHDAY %}
+                                        {{ request.user.first_name }}, поздравляю тебя с <b>днем рождения</b>! 🎉
+                                        Желаю тебе достигнуть всех твоих целей и стать лучшим в своем деле 😉
+                                        🎉🎂✨🍰🥳🎈
+
+
+                                    {% elif notice.code == notice_codes.NEW_LEVEL %}
+                                        Вы достигли <b>{{ notice.level }} ур.</b>!
+
+
+                                    {% elif notice.code == notice_codes.UPDATE_PROJECT_STATUS %}
+                                        Статус вашего
+                                        <a class="link" href="{% url 'project' notice.project_id %}">проекта</a>
+                                        был изменен на
+                                        <b class="{% get_project_status_css_class notice.project_status_code %}">
+                                            {% get_project_status_name notice.project_status_code %}</b>.
+
+
+                                    {% elif notice.code == notice_codes.ACHIEVEMENT_RECEIVED %}
+                                        Вы получили достижение
+                                        {% if notice.achievement_level %}
+                                            <a class="link" href="{% url 'achievements' %}">
+                                                {{ notice.achievement_name }}</a>
+                                            {{ notice.achievement_level }} ур.
+                                        {% else %}
+                                            <a class="link" href="{% url 'achievements' %}">
+                                                {{ notice.achievement_name }}</a>
+                                        {% endif %}
+                                        ранга
+                                        <b class="{% get_rank_css_class notice.achievement_rank_code %}">
+                                            {% get_rank_name notice.achievement_rank_code %}</b>.
+
+
+                                    {% elif notice.code == notice_codes.UPDATE_RANK %}
+                                        Выш ранг был повышен до
+                                        <b>{{ notice.rank_name }}</b>.
+
+
+                                    {% elif notice.code == notice_codes.UPDATE_COMPLETING_TASK_STATUS %}
+                                        Статус выполнения задания
+                                        <a class="link" href="{% url 'task' notice.task_id %}">
+                                            {{ notice.task_name }}</a>
+                                        был изменен на
+                                        <b class="{% get_task_status_css_class notice.task_status_code %}">
+                                            {% get_task_status_name notice.task_status_code %}</b>.
+
+
+                                    {% elif notice.code == notice_codes.ADDITIONAL_POINTS_RECEIVED %}
+                                        Вы получили
+                                        <b>{{ notice.points }} балл.</b>{% if notice.comment %}:
+                                            {{ notice.comment }}.
+                                        {% endif %}
+
+
+                                    {% elif notice.code == notice_codes.PROJECT_COMMENT_LEFT %}
+                                        Пользователь
+                                        <a class="link" href="{% url 'user' notice.username %}">
+                                            {{ notice.user_full_name }}</a>
+                                        оставил комментарий к вашему проекту.
+
+
+                                    {% elif notice.code == notice_codes.COMPLETING_TASK_COMMENT_LEFT %}
+                                        Пользователь
+                                        <a class="link" href="{% url 'user' notice.username %}">
+                                            {{ notice.user_full_name }}
+                                        </a>
+                                        оставил комментарий к выполнению вашего задания
+                                        <a class="link" href="{% url 'task' notice.task_id %}">
+                                            {{ notice.task_name }}</a>.
+
+
+
+
+                                    <!-- Для студентов групповые -->
+
+                                    {% elif notice.code == notice_codes.POST_ADDED %}
+                                        Добавлен новый пост
+                                        <a class="link" href="{% url 'post' notice.post_id %}">
+                                            {{ notice.post_header }}</a>.
+
+
+                                    {% elif notice.code == notice_codes.ASSIGNED_EVENT %}
+                                        Добавлено новое событие
+                                        <a class="link" href="{% url 'event' notice.event_id %}">
+                                            {{ notice.event_name }}</a>.
+
+
+                                    {% elif notice.code == notice_codes.ASSIGNED_TASK %}
+                                        Добавлена новая задача
+                                        <a class="link" href="{% url 'task' notice.task_id %}">
+                                            {{ notice.task_name }}</a>
+                                        в категории <b>{{ notice.task_section_name }}</b>.
+
+
+                                    {% elif notice.code == notice_codes.ASSIGNED_TEST %}
+                                        Назначено тестирование
+                                        <a class="link" href="{% url 'test' notice.test_id %}">
+                                            {{ notice.test_name }}</a>.
+
+
+                                    {% elif notice.code == notice_codes.UPDATE_TEST_OPEN_STATUS %}
+                                         Тестирование
+                                        <a class="link" href="{% url 'test' notice.test_id %}">
+                                            {{ notice.test_name }}</a>
+                                        {% if notice.test_is_open %} открыто. {% else %} закрыто. {% endif %}
+
+
+                                    {% elif notice.code == notice_codes.UPDATE_TEST_RESULTS_STATUS %}
+                                        Результаты тестирования
+                                        <a class="link" href="{% url 'test' notice.test_id %}">
+                                            {{ notice.test_name }}</a>
+                                        {% if notice.test_open_results %} открыты. {% else %} закрыты. {% endif %}
+
+                                    {% endif %}
+
+                                </div>
+                                <div class="fs-small color-secondary mt-small">
+                                    {% datetime notice.datetime_create %}
+                                </div>
+                            </div>
+
+                            {% if not notice.is_read %}
+                                <div class="right">
+                                    <form action="{% url 'notices' %}" method="post">
+                                        {% csrf_token %}
+                                        <button class="button button-primary" type="submit" name="read" value="{{ notice.id }}">
+                                            Прочитать
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr>
+                {% endfor %}
+
+                {% pagination notices page url_name="notices" %}
+
+            {% else %}
+                <div class="content message-secondary mt-normal">Уведомлений нет</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card card-right">
+            <div class="content title text-center">Действия</div>
+            <hr class="mv-normal">
+
+            <div class="content row">
+                <div class="h-center">
+                    <form action="{% url 'notices' %}" method="post">
+                        {% csrf_token %}
+                        <button class="button button-primary" type="submit" name="read" value="all">
+                            Прочитать все
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+{% endblock %}

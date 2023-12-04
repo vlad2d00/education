@@ -1,0 +1,14 @@
+{% load mytags %}
+
+{% hashtags hashtag_list %}
+
+<div class="row mt-normal v-center">
+    <div class="icon-small color-secondary">
+        {% include "web/images/eye.html" %}
+    </div>
+    <div class="color-secondary ml-small">{{ count_views }}</div>
+
+    <div class="fs-small color-secondary right">
+        {% datetime datetime_create %}
+    </div>
+</div>

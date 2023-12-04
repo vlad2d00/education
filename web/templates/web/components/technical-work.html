@@ -1,0 +1,27 @@
+{% load mytags %}
+
+{% if technical_work %}
+    <div class="card card-left">
+        <div class="title text-center">❗Технические работы❗</div>
+        <hr class="mv-normal">
+
+        <div class="content">
+            <div class="item-key">Начало:</div>
+            <div class="mt-tiny">
+                {% datetime technical_work.datetime_begin fixed_time=True %}
+            </div>
+            <div class="color-secondary mt-tiny">
+                ({% datetime technical_work.datetime_begin fixed_date=False %})
+            </div>
+
+            <div class="item-key mt-normal">Завершение:</div>
+            <div class="mt-tiny">
+                {% datetime technical_work.datetime_end fixed_time=True %}
+            </div>
+
+            <div class="color-secondary mt-normal">
+                P.S. Во время технических работ функционалом приложения будет воспользоваться невозможно.
+            </div>
+        </div>
+    </div>
+{% endif %}

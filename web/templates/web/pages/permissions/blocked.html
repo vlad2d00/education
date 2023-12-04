@@ -1,0 +1,39 @@
+{% extends 'web/pages/basic.html' %}
+{% load static %}
+
+{% block content %}
+
+    {% if hide_navigation %}
+    <div class="card card-middle h-center">
+    {% else %}
+    <div class="card card-middle">
+    {% endif %}
+
+        <div class="content title text-center">{{ title }}</div>
+        <hr class="mv-normal">
+
+        <div class="content">
+            <div class="items">
+                <div class="item">
+                    <div class="item-key">Дата и время разблокировки: </div>
+                    {% if datetime_unlock %}
+                        <div class="item-value">{{ datetime_unlock }}</div>
+                    {% else %}
+                        <div class="item-value-none">блокировка навсегда</div>
+                    {% endif %}
+                </div>
+
+                {% if cause %}
+                    <div class="item">
+                        <div class="item-key">Причина: </div>
+                        <div class="item-value">{{ cause }}</div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <img class="image-card mt-normal" src="{% static 'web/images/hackerman.jpg' %}" alt="Хакерман">
+
+        </div>
+    </div>
+
+{% endblock %}

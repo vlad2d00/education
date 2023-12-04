@@ -1,0 +1,113 @@
+{% extends 'web/pages/basic.html' %}
+{% load static %}
+{% load mytags %}
+
+{% block content %}
+    <div class="col">
+
+        <div class="card card-middle">
+            <div class="content title text-center">{{ title }}</div>
+            <hr class="mv-normal">
+
+            <div class="content">
+                {% if feedback_left %}
+                    <div class="message-success">Спасибо за обратную связь! Она будет прочитана и учтена</div>
+                {% endif %}
+
+                <form action="{% url 'feedback' %}" method="post">
+                    {% csrf_token %}
+                    <div class="form-errors">{{ login_form.non_field_errors }}</div>
+
+                    {% for f in feedback_form %}
+                        <div class="mt-normal">
+
+                            <label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}</label>
+                            <div class="col">
+                                <div class="mt-small form-normal">
+                                    <label>{{ f }}</label>
+                                </div>
+                            </div>
+
+                            <div class="form-help-text">{{ f.help_text }}</div>
+                            <div class="form-errors">{{ f.errors }}</div>
+                        </div>
+                    {% endfor %}
+
+                    <div class="row mt-normal">
+                        <div class="h-center">
+                            <button class="button button-primary" type="submit" name="send">
+                                Отправить
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if request.user.is_staff %}
+            <div class="card card-middle">
+                <div class="content title text-center">Оставленная обратная связь</div>
+                <hr class="mt-normal">
+
+                {% if feedbacks %}
+                    {% for feedback in feedbacks %}
+                        <div class="content row mt-normal">
+                            <div class="col">
+                                {{ feedback.text|linebreaks }}
+
+                                <div class="row">
+                                    <div class="fs-small color-secondary mt-small">
+                                        {% datetime feedback.datetime_create %}{% if feedback.student_group %},
+                                            {{ feedback.student_group }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if not feedback.is_read %}
+                                <div class="right">
+                                    <form action="{% url 'feedback' %}" method="post">
+                                        {% csrf_token %}
+                                        <button class="button button-primary" type="submit" name="read" value="{{ feedback.id }}">
+                                            Прочитать
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <hr class="mt-normal">
+                    {% endfor %}
+
+                {% else %}
+                    <div class="content mt-normal">
+                    <div class="message-secondary">Нет ни одной оставленной обратной связи</div>
+                </div>
+                {% endif %}
+
+                {% pagination feedbacks page "notices" %}
+            </div>
+        {% endif %}
+    </div>
+
+    {% if request.user.is_staff %}
+        <div class="col">
+            <div class="card card-right">
+                <div class="content title text-center">Действия</div>
+                <hr class="mv-normal">
+
+                <div class="content row">
+                    <div class="h-center">
+                        <form action="{% url 'feedback' %}" method="post">
+                            {% csrf_token %}
+                            <button class="button button-primary" type="submit" name="read" value="all">
+                                Прочитать все
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    {% endif %}
+
+{% endblock %}

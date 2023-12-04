@@ -1,0 +1,314 @@
+{% extends 'web/pages/basic.html' %}
+{% load static %}
+{% load mytags %}
+
+{% block content %}
+    {% get_task_status_code_list as task_status_codes %}
+    {% get_answer_format_code_list as answer_format_codes %}
+
+    <div class="col">
+        <div class="card card-middle">
+            <div class="content relative">
+                {% if request.user.is_staff %}
+                    {% admin_action_change request 'Task' task.id is_absolute=True %}
+                {% endif %}
+
+                <div class="row v-center">
+                     {% if task.image_url %}
+                        <img class="icon-large-round" src="{{ task.image_url }}" alt="Иконка задачи">
+                     {% else %}
+                        <div class="icon-large color-secondary">
+                            {% include 'web/images/task.html' %}
+                        </div>
+                     {% endif %}
+
+                    <div class="col ml-normal">
+                        <div class="title">{{ task.name }}</div>
+                        <div class="message-secondary mt-tiny">
+                            {{ task.section_name }}{% if task.difficulty_code %},
+                            {% get_difficulty_name task.difficulty_code %}
+                            {% endif %}
+                        </div>
+                        {% if task.complete %}
+                            <div class="mt-tiny">
+                                <div class="{% get_task_status_css_class task.complete.status_code %}">
+                                    {% get_task_status_name task.complete.status_code %}
+
+                                    {% if task.complete.status_code == task_status_codes.DONE %}
+                                        ({{ task.complete.points }}/{{ task.points }})
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mt-normal">
+                    {% if task.points or task.reward %}
+                        <div class="row v-center mr-medium tooltip tooltip-normal">
+                            <div class="icon-normal color-secondary">
+                                {% include "web/images/star.html" %}
+                            </div>
+                            <div class="ml-small color-secondary bold">
+                                {{ task.points }} балл.
+                            </div>
+                            <div class="tooltip-text">Награда за выполнение.</div>
+                        </div>
+                    {% endif %}
+
+                    {% if task.max_attempts or task.attempts_per_day %}
+                        <div class="row v-center mr-medium tooltip tooltip-short">
+                            <div class="icon-normal color-secondary">
+                                {% include "web/images/cycle.html" %}
+                            </div>
+                            <div class="ml-small color-secondary bold">
+                                {% if task.max_attempts and not task.attempts_per_day %}
+                                   всего: {{ task.max_attempts }}
+                                {% elif not task.max_attempts and task.attempts_per_day %}
+                                   в день: {{ task.attempts_per_day }}
+                                {% else %}
+                                    попытки: {{ task.attempts_per_day }} | {{ task.max_attempts }}
+                                {% endif %}
+                            </div>
+                            <div class="tooltip-text">
+                                {% if task.attempts_per_day and task.max_attempts %}
+                                    Попыток за сутки: {{ task.attempts_per_day }}<br>
+                                    Всего попыток: {{ task.max_attempts }}.
+
+                                {% elif task.attempts_per_day and not task.max_attempts %}
+                                    Попыток за сутки: {{ task.attempts_per_day }}.
+
+                                {% elif not task.attempts_per_day and task.max_attempts %}
+                                    Всего попыток: {{ task.max_attempts }}.
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if task.manual_check_result %}
+                        <div class="row v-center mr-medium tooltip tooltip-normal">
+                            <div class="icon-normal color-secondary">
+                                {% include "web/images/user.html" %}
+                            </div>
+                            <div class="ml-small color-secondary bold">проверка</div>
+                            <div class="tooltip-text">Результат выполнения проверяется человеком.</div>
+                        </div>
+
+                    {% else %}
+                        <div class="row v-center mr-medium tooltip tooltip-normal">
+                            <div class="icon-normal color-secondary">
+                                {% include "web/images/bolt.html" %}
+                            </div>
+                            <div class="ml-small color-secondary bold">автомат</div>
+                            {% if task.text_checks %}
+                                <div class="tooltip-text">
+                                    Выполнение засчитывается сразу после прохождение автоматической проверки.
+                                </div>
+                            {% else %}
+                                <div class="tooltip-text">Выполнение засчитывается без проверки задания.</div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if task.readline or task.deadline %}
+                    <div class="mt-normal">
+                        {% get_datetime_now as dt_now %}
+
+                        {% if task.readline %}
+                            {% if task.readline > dt_now %}
+                                <div class="color-secondary">
+                                    Мягкий срок выполнения: {% datetime task.readline show_day_week=True %}
+                                </div>
+                            {% else %}
+                                <div class="color-error">
+                                    Мягкий срок выполнения: {% datetime task.readline show_day_week=True %}
+                                </div>
+                            {% endif %}
+                        {% endif %}
+
+                        {% if task.deadline %}
+                            {% if task.deadline > dt_now %}
+                                <div class="color-secondary mt-tiny">
+                                    Жесткий срок выполнения: {% datetime task.deadline show_day_week=True %}
+                                </div>
+                            {% else %}
+                                <div class="color-error mt-tiny">
+                                    Жесткий срок выполнения: {% datetime task.deadline show_day_week=True %}
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <hr class="mv-normal">
+            <div class="content">
+                {% autoescape off %}
+                    {{ task.text|linebreaksbr }}
+                {% endautoescape %}
+
+                {% hashtags task.hashtags %}
+            </div>
+        </div>
+
+        {% if task.complete.status_code == task_status_codes.ASSIGNED or task.complete.status_code == task_status_codes.TESTS_FAILED or task.complete.status_code == task_status_codes.RETURNED %}
+            <div class="card card-middle">
+                <div class="content title text-center">Выполнение</div>
+                <hr class="mv-normal">
+
+                <div class="content">
+                    {% if task.max_attempts or task.attempts_per_day or complete.total_attempts or task.checks_complete %}
+                        <div class="row mb-normal">
+                            {% if task.max_attempts or task.attempts_per_day %}
+                                <div class="right
+                                    {% if task.complete.total_attempts == 0 and task.complete.total_attempts == 0 %}
+                                        message-secondary
+                                    {% elif task.complete.total_attempts == task.max_attempts or task.complete.attempts_today == task.attempts_per_day %}
+                                        message-error
+                                    {% else %}
+                                        message-warning
+                                    {% endif %}">
+
+                                    Использовано попыток:
+                                    {% if task.attempts_per_day %}
+                                        сегодня {{ task.complete.attempts_today }} из {{ task.attempts_per_day }}
+                                        {% if task.max_attempts %} | всего {% endif %}
+                                    {% endif %}
+                                    {% if task.max_attempts %}
+                                        {{ task.complete.total_attempts }} из {{ task.max_attempts }}
+                                    {% endif %}
+                                </div>
+
+                            {% elif task.complete.total_attempts %}
+                                <div class="right message-secondary">
+                                    Использовано попыток: {{ task.complete.total_attempts }}
+                                </div>
+                            {% endif %}
+
+                            {% for check_complete in task.checks_complete %}
+                                <div class="ml-normal icon-normal color-secondary tooltip tooltip-normal right">
+                                    {% if check_complete.icon_name %}
+                                        {% svg check_complete.icon_name %}
+                                    {% else %}
+                                        {% include "web/images/circle-exclamation.html" %}
+                                    {% endif %}
+                                    <span class="tooltip-text">{{ check_complete.description }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% if task.complete.kwargs.error %}
+                        <div class="message-error mb-normal">{{ task.complete.kwargs.error }}</div>
+                    {% endif %}
+
+                    <form action="{% url 'task' task.id %}" method="post">
+                        {% csrf_token %}
+                        <div class="form-errors">{{ task_complete_form_errors }}</div>
+
+
+                        {% if task.answer_format_code == answer_format_codes.TEXT %}
+                            <label class="form-label" for="text"></label>
+                            <div class="mt-small form-normal">
+                                <textarea id="text" name="text" rows="8" class="form-input-text form-max">{{ task.complete.kwargs.text }}</textarea>
+                            </div>
+
+                        {% elif task.answer_format_code == answer_format_codes.PROGRAM_TEXT %}
+                            {% for i in task.count_forms|create_range %}
+                                {% get_item task.complete.kwargs.files forloop.counter0 as file %}
+
+                                <div class="mt-normal">
+                                    <label class="form-label"
+                                           for="{% get_name "file_name" forloop.counter %}">
+                                        Имя файла
+                                    </label>
+                                    <div class="mt-small form-normal">
+                                        <input type="text" maxlength="255"
+                                               id="{% get_name "file_name" forloop.counter %}"
+                                               name="{% get_name "file_name" forloop.counter %}"
+                                               class="form-input-text"
+                                               value="{{ file.name }}"/>
+                                    </div>
+                                </div>
+
+                                <div class="mt-normal">
+                                    <label class="form-label mt-normal"
+                                           for="{% get_name "file_text" forloop.counter %}">
+                                        Текст файла
+                                    </label>
+                                    <div class="mt-small form-normal">
+                                        <textarea
+                                                id="{% get_name "file_text" forloop.counter %}"
+                                                name="{% get_name "file_text" forloop.counter %}" rows="4"
+                                                class="form-input-text form-max">{{ file.text }}</textarea>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+
+                        <div class="row mt-normal">
+                            <div class="right">
+                                <button class="button button-primary" type="submit">Отправить</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        {% elif task.complete %}
+            <div class="card card-middle">
+                <div class="content title text-center">Выполнение</div>
+                <hr class="mv-normal">
+
+
+                {% if task.answer_format_code == answer_format_codes.TEXT %}
+                    <div class="content">
+                        {{ task.complete.kwargs.text|linebreaks }}
+                    </div>
+
+                {% elif task.answer_format_code == answer_format_codes.PROGRAM_TEXT %}
+                    {% for file in task.complete.kwargs.files %}
+                        <div class="content mt-normal text-center">
+                            <div class="color-secondary bold">{{ file.name }}</div>
+                        </div>
+                        <pre class="prettyprint lang-java linenums">{{ file.text }}</pre>
+                    {% endfor %}
+                {% endif %}
+
+
+                {% if task.complete.status_code == task_status_codes.REVIEW %}
+                    <form action="{% url 'task' task.id %}" method="post">
+                        {% csrf_token %}
+
+                        <div class="content row mt-normal">
+                            <div class="right">
+                                <button class="button button-secondary" type="submit" name="cancel">
+                                    Отменить выполнение
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                {% endif %}
+            </div>
+        {% endif %}
+
+    </div>
+
+    <div class="col">
+        {% if task.complete.status_code == task_status_codes.UNDERGOING_TESTING %}
+            <div class="card card-right">
+                <div class="content title text-center">❗Внимание❗</div>
+                <hr class="mv-normal">
+
+            <div class="content message-error">
+                Выполнение вашего задания проверяется системой.
+                Перезагрузите страницу через несколько секунд, чтобы обновить результаты...
+            </div>
+        {% endif %}
+    </div>
+
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+{% endblock %}

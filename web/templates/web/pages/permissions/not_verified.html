@@ -1,0 +1,41 @@
+{% extends 'web/pages/basic.html' %}
+{% load static %}
+
+{% block content %}
+
+    {% if hide_navigation %}
+    <div class="card card-middle h-center">
+    {% else %}
+    <div class="card card-middle">
+    {% endif %}
+
+        <div class="content title text-center">{{ title }}</div>
+        <hr class="mv-normal">
+
+        <div class="content">
+            {% if rejected %}
+                <div class="message-error">Подтверждение аккаунта было отклонено</div>
+                {% if rejection_cause %}
+                    <div class="item">
+                        <div class="item-key">Причина: </div>
+                        <div class="item-value">{{ rejection_cause }}</div>
+                    </div>
+                {% endif %}
+                <img class="image-card mt-normal" src="{% static 'web/images/fail.jpg' %}" alt="Грусть">
+
+            {% else %}
+                <div>
+                    Вы успешно зарегистрировались!<br>
+                    Однако чтобы пользоваться веб-приложением в полной мере,
+                    ваш аккаунт должен быть подтвержден администратором.
+                    Подождите, пожалуйста, пока администратор подтвердит ваш аккаунт или отклонит его,
+                    если вы не были идентифицированы или некорректно заполнили данные.<br>
+                    Процедура подтверждения занимает в среднем от нескольких часов до двух суток.
+                </div>
+
+                <img class="image-card mt-normal" src="{% static 'web/images/wait.gif' %}" alt="Ожидание">
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

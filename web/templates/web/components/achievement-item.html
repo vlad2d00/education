@@ -1,0 +1,19 @@
+{% load static %}
+{% load mytags %}
+
+<div class="achievement-item tooltip tooltip-long {% get_achievement_bg_css_class rank_code %}">
+    {% if image_path %}
+        {% include image_path %}
+    {% else %}
+        {% include 'web/images/trophy.html' %}
+    {% endif %}
+
+    <span class="tooltip-text">
+        <b class="color-bg fs-medium">{{ name }}</b><br>
+        {{ description }}
+        {% if is_private %}
+            <p class="italic color-bg">Личное</p>
+        {% endif %}
+    </span>
+
+</div>

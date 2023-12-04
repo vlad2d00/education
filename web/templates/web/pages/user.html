@@ -1,0 +1,343 @@
+{% extends 'web/pages/basic.html' %}
+{% load static %}
+{% load mytags %}
+
+{% block content %}
+    <div class="col">
+        <div class="card-cover card-middle absolute bg-secondary-gradient">
+            {% if user.cover_image_url %}
+                <img class="image-cover" src="{{ user.cover_image_url }}" alt="Обложка профиля">
+            {% endif %}
+        </div>
+
+        <div class="icon-huge-over-cover absolute">
+            <div class="icon-huge-status absolute">
+                {% datetime user.datetime_last_activity show_words=False %}
+            </div>
+
+            <img class="icon-huge-round"
+                 src="{% if user.image_url %}
+                    {{ user.image_url }}
+                 {% else %}
+                     {% static 'web/images/default_avatar.jpg' %}
+                 {% endif %}"
+                 alt="Аватарка профиля">
+        </div>
+
+        <div class="card card-middle mt-image-cover card-user">
+            <div class="content relative">
+                {% if user.id == request.user.id %}
+                    {% custom_action request 'edit-user' 'edit' is_absolute=True %}
+                {% elif request.user.is_staff %}
+                    {% admin_action_change request 'User' user.id is_absolute=True %}
+                {% endif %}
+
+                <div class="ml-icon-huge-small row">
+                    <div class="col ml-normal v-center">
+                        <div class="fs-large bold">{{ user.first_name }} {{ user.last_name }}</div>
+
+                        <div class="mt-small">{{ user.about_me }}</div>
+
+                        <div class="color-secondary mt-small">
+                            {% if user.is_teacher %}
+                                Преподаватель{% if user.is_admin %}, администратор {% endif %}
+                            {% elif user.student %}
+                                Студент, {{ user.student.group.name }}{% if user.is_admin %}, администратор {% endif %}
+                            {% elif user.is_admin %}
+                                Администратор
+                            {% endif %}
+
+                            {% if user.student.option %}
+                                {% if user.id == request.user.id or user.is_teacher or user.is_staff %}
+                                    ({{ user.student.option }} вариант)
+                                {% endif %}
+                            {% endif %}
+
+                        </div>
+                    </div>
+                </div>
+
+                {% if user.student %}
+                <div class="row">
+                    <div class="row mt-medium h-center">
+                        {% if user.student.level.next_points %}
+                            <div class="color-secondary mr-small">{{ user.student.level.prev_points }}</div>
+                        {% endif %}
+
+                        <div class="level-bar tooltip tooltip-long">
+                            <div style="width: {{ user.student.level.percent }}%;">
+                                <div class="level-progress"></div>
+                            </div>
+                            {% if user.id == request.user.id %}
+                                <span class="tooltip-text">
+                                    Набрано {{ user.student.level.points }} из {{ user.student.level.next_points }} балл.<br>
+                                    Осталось {{ user.student.level.points_to_next_level }} балл. до следующего ур.
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        {% if user.student.level.next_points %}
+                            <div class="color-secondary ml-small">{{ user.student.level.next_points }} </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row v-center mt-normal">
+                    <div class="row tooltip tooltip-long">
+                        <div class="icon-small color-secondary">
+                            {% include "web/images/up.html" %}
+                        </div>
+                        <div class="bold color-secondary ml-small">
+                            {{ user.student.level.value }} ур.
+                        </div>
+                        {% if user.id == request.user.id %}
+                            <span class="tooltip-text">
+                                Это ваш уровень.
+                                За каждый новый уровень у вас открываются новые возможности в приложении.
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    {% get_system as system %}
+
+                    {% if request.user.id == user.id or not system.hide_rating or request.user.is_staff %}
+                        <div class="row tooltip tooltip-long">
+                            <div class="icon-small color-secondary ml-medium">
+                                {% include "web/images/star.html" %}
+                            </div>
+                            <div class="bold color-secondary ml-small">
+                                {{ user.student.level.points }} балл.
+                            </div>
+                            {% if user.id == request.user.id %}
+                                <span class="tooltip-text">
+                                    Это количество ваших баллов.
+                                    Выполняйте задания, сдавайте тесты и участвуйте в событиях,
+                                    чтобы повысить их количество.
+                                </span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    {% if not system.hide_rating or request.user.is_staff %}
+                        <div class="row tooltip tooltip-long">
+                            <div class="icon-small color-secondary ml-medium">
+                                {% include "web/images/trophy.html" %}
+                            </div>
+                            <div class="bold color-secondary ml-small tooltip tooltip-normal">
+                                {{ user.student.rating_position }} место
+                            </div>
+                            {% if user.id == request.user.id %}
+                                <span class="tooltip-text">
+                                    Это ваше место в рейтинге внутри вашей группы.
+                                    За ТОП-3 в рейтинге месяца выдаются достижения и награды.
+                                </span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <div class="row tooltip tooltip-long">
+                        <div class="icon-small color-secondary ml-medium">
+                            {% include "web/images/medal.html" %}
+                        </div>
+
+                        <div class="bold ml-small">
+                            <div class="{% get_rank_css_class user.student.rank_code %}">
+                                {% get_rank_name user.student.rank_code as rank_name %}
+                                {{ rank_name|lower }} ранг
+                            </div>
+                        </div>
+                        {% if user.id == request.user.id %}
+                            <span class="tooltip-text">
+                                Это ваш ранг. Ранг отражает уровень вашей прокачки.
+                                Ранг повышается за количество и ранг полученных достижений.
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="row right tooltip tooltip-long">
+                        <div class="row color-secondary ml-medium">
+                            <div class="icon-normal color-secondary">
+                                {% include "web/images/coin.html" %}
+                            </div>
+                            <div class="bold color-secondary ml-small">
+                                {{ user.student.coins }}
+                            </div>
+                        </div>
+                        {% if user.id == request.user.id %}
+                            <span class="tooltip-text">
+                                Это количество ваших монет — валюта, за которую можно кое-что приобрести.
+                            </span>
+                        {% endif %}
+                    </div>
+
+                </div>
+            {% endif %}
+            </div>
+
+            {% if user.student %}
+                <hr class="mv-normal">
+                <div class="content relative">
+                    {% if user.id == request.user.id %}
+                        {% custom_action request 'project' 'edit' param=user.student.project.id is_absolute=True %}
+                    {% elif request.user.is_staff %}
+                        {% admin_action_change request 'Project' user.student.project.id is_absolute=True %}
+                    {% endif %}
+
+                    <div class="subtitle mb-normal text-center">Проект</div>
+
+                    <div class="row">
+                        <div class="col">
+                            {% get_project_status_code_list as project_status_codes %}
+                            {% if user.student.project.name and user.student.project.status_code > project_status_codes.APPROVAL %}
+                                <div class="row v-center">
+                                    <div class="form-label">Тема:</div>
+                                    <div class="ml-small mt-tiny">{{ user.student.project.name }}</div>
+                                </div>
+                            {% endif %}
+
+                            <div class="row v-center mt-tiny">
+                                <div class="form-label mr-small">Статус:</div>
+                                <div class="{% get_project_status_css_class user.student.project.status_code %}">
+                                    {% get_project_status_name user.student.project.status_code as project_status_name %}
+                                    {{ project_status_name|lower }}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    {% if user.student.project.urls.document or user.student.project.urls.figma or user.student.project.urls.drawio or user.student.project.urls.github %}
+                    <div class="row jc-center mt-medium">
+                        {% if user.student.project.urls.document %}
+                            <a class="icon-medium-plus color-secondary mh-normal tooltip tooltip-short
+                            {% if request.user.id == user.id %} link {% endif %}"
+                                {% if request.user.id == user.id %}
+                                    href="{{ user.student.project.urls.document }}" target="_blank"
+                                {% endif %}>
+
+                                {% include "web/images/file-lines.html" %}
+                                <span class="tooltip-text">Документ с описанием проекта</span>
+                            </a>
+                        {% endif %}
+
+                        {% if user.student.project.urls.figma %}
+                            <a class="icon-medium-plus color-secondary mh-normal tooltip tooltip-short
+                            {% if request.user.id == user.id %} link {% endif %}"
+                                {% if request.user.id == user.id %}
+                                    href="{{ user.student.project.urls.figma }}" target="_blank"
+                                {% endif %}>
+
+                                {% include "web/images/figma.html" %}
+                                <span class="tooltip-text">Проект на Figma</span>
+                            </a>
+                        {% endif %}
+
+                        {% if user.student.project.urls.drawio %}
+                            <a class="icon-medium-plus color-secondary mh-normal tooltip tooltip-short
+                            {% if request.user.id == user.id %} link {% endif %}"
+                                {% if request.user.id == user.id %}
+                                    href="{{ user.student.project.urls.drawio }}" target="_blank"
+                                {% endif %}>
+
+                                {% include "web/images/project.html" %}
+                                <span class="tooltip-text">Проект на Drawio</span>
+                            </a>
+                        {% endif %}
+
+                        {% if user.student.project.urls.github %}
+                            <a class="icon-medium-plus color-secondary mh-normal tooltip tooltip-short
+                            {% if request.user.id == user.id %} link {% endif %}"
+                                {% if request.user.id == user.id %}
+                                    href="{{ user.student.project.urls.github }}" target="_blank"
+                                {% endif %}>
+
+                                {% include "web/images/github.html" %}
+                                <span class="tooltip-text">Проект на GitHub</span>
+                            </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                </div>
+
+                <hr class="mv-normal">
+                <div class="content">
+                    <div class="subtitle mb-normal text-center">
+                        Достижения
+                        {% if user.student.achievements %}
+                            ({{ user.student.achievements|length }})
+                        {% endif %}
+                    </div>
+                    {% if user.student.achievements %}
+                        <div class="row jc-center">
+                            {% for x in user.student.achievements %}
+                                {% achievement_item x.image_path x.name x.description x.rank_code x.is_personal %}
+                            {% endfor %}
+                        </div>
+
+                    {% else %}
+                        <div class="message-secondary">
+                            {% if user.id == request.user.id %}
+                                У вас еще нет ни одного достижения. Прикладывайте усилия и они у вас обязательно появятся!
+                            {% else %}
+                                Не получено ни одного достижения
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <hr class="mv-normal">
+                <div class="content">
+                    <div class="subtitle mb-normal text-center">Статистика</div>
+
+                    <div class="subtitle mt-normal">Активность</div>
+                    <div class="mt-tiny">
+                        Дней на платформе: <b>{{ user.days }}</b>
+                    </div>
+                    <div class="mt-tiny">
+                        Онлайн дней подряд: <b>{{ user.online_days_in_a_row }}</b>
+                    </div>
+                    <div class="mt-tiny">
+                        Рекорд онлайна дней подряд: <b>{{ user.online_days_in_a_row_max }}</b>
+                    </div>
+                    <div class="mt-tiny">
+                        Общее количество запросов: <b>{{ user.count_requests }}</b>
+                    </div>
+
+                    <div class="subtitle mt-normal">Задания</div>
+                    <div class="mt-tiny">
+                        Выполнено: <b>{{ user.student.count_tasks_complete }}</b>
+                    </div>
+                    <div class="mt-tiny">
+                        Выполнено с первого раза подряд: <b>{{ user.student.pass_tasks_first_time_in_a_row }}</b>
+                    </div>
+                    <div class="mt-tiny">
+                        Рекорд выполнения с первого раза подряд: <b>{{ user.student.pass_tasks_first_time_in_a_row_max }}</b>
+                    </div>
+                    <div class="mt-tiny">
+                        Среднее количество попыток: <b>{{ user.student.average_count_attempts_for_tasks }}</b>
+                    </div>
+
+                    <div class="subtitle mt-normal">Тестирование</div>
+                    <div class="mt-tiny">
+                        Лучший результат за прохождение тестирования: <b>{{ user.student.best_test_result }}%</b>
+                    </div>
+
+                    <div class="subtitle mt-normal">Баллы</div>
+                    <div class="mt-tiny">
+                        За выполнение заданий: <b>{{ user.student.points_for_tasks }}</b>
+                    </div>
+                    <div class="mt-tiny">
+                        За прохождение тестирований: <b>{{ user.student.points_for_tests }}</b>
+                    </div>
+                    <div class="mt-tiny">
+                        Дополнительные: <b>{{ user.student.additional_points }}</b>
+                    </div>
+
+                </div>
+
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

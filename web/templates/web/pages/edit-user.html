@@ -1,0 +1,55 @@
+{% extends 'web/pages/basic.html' %}
+{% load static %}
+{% load mytags %}
+
+{% block content %}
+    <div class="col">
+        <div class="card card-middle">
+            <div class="content relative">
+                {% if request.user.is_staff %}
+                    {% admin_action_change request 'User' user.id is_absolute=True %}
+                {% endif %}
+                <div class="title text-center">{{ title }}</div>
+            </div>
+            <hr class="mv-normal">
+
+            <div class="content">
+                {% if saved %}
+                    <div class="message-success">Данные успешно обновлены</div>
+                {% endif %}
+
+                <form action="{% url 'edit-user' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-errors">{{ edit_form.non_field_errors }}</div>
+
+                    {% for f in edit_form %}
+                        <div class="mt-normal">
+
+                            <div class="col mt-medium">
+                                <label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}</label>
+                                <div class="mt-small form-normal">
+                                    <label>{{ f }}</label>
+                                </div>
+                            </div>
+
+                            <div class="form-help-text">{{ f.help_text }}</div>
+                            <div class="form-errors">{{ f.errors }}</div>
+                        </div>
+                    {% endfor %}
+
+                    <div class="row mt-normal">
+                        <div class="h-center">
+                            <button class="button button-secondary" type="submit" name="cancel">
+                                Назад
+                            </button>
+                            <button class="button button-primary ml-medium" type="submit" name="confirm">
+                                Подтвердить
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

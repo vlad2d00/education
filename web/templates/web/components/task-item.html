@@ -1,0 +1,76 @@
+{% load static %}
+{% load mytags %}
+
+<a class="row pv-small-plus highlight-on-hover" href="{% url 'task' task.id %}">
+    <div class="col ml-normal">
+        {% if task.image_url %}
+            <img class="icon-medium-round" src="{{ task.image_url }}" alt="Задача">
+        {% else %}
+            <div class="icon-medium-round color-secondary">
+                {% include "web/images/task.html" %}
+            </div>
+        {% endif %}
+    </div>
+
+    {% get_task_status_code_list as task_status_codes %}
+    {% get_difficulty_code_list as difficulty_codes %}
+
+    <div class="ml-normal">
+        <div class="{% get_task_status_css_class task.status_code %}
+             {% if not task.difficulty_code %} mt-small {% endif %}">{{ task.name }}</div>
+
+        {% if task.difficulty_code %}
+            <div class="color-secondary fs-small">
+                {% get_difficulty_name task.difficulty_code %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="ml-normal right">
+        <div class="mr-normal text-right">
+            {% if task.status_code != task_status_codes.ASSIGNED %}
+                <div class="ml-normal mb-tiny">
+
+                    {% if not task.status_code and not task.viewed %}
+                        <div class="color-special fs-small">Новое</div>
+
+                    {% elif task.status_code %}
+                        <div class="inline {% get_task_status_css_class task.status_code %} fs-small">
+                            {% get_task_status_name task.status_code as task_status_name %}
+                            {{ task_status_name }}
+
+                            {% if task.points %}
+                                ({{ task.points }}/{{ task.points_max }})
+                            {% endif %}
+
+                            {% if not task.viewed %}
+                                <div class="inline color-special fs-small">(обновлено)</div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                </div>
+            {% endif %}
+
+            {% if task.readline or task.deadline %}
+                {% get_datetime_now as datetime_now %}
+                {% if task.readline and task.readline > datetime_now %}
+                    <div class="color-secondary fs-small">
+                        {% datetime task.readline show_words=False %}
+                    </div>
+                {% else %}
+                    {% if not task.readline or not task.deadline %}
+                        <div class="color-secondary fs-small">
+                            {% datetime task.deadline show_words=False %}
+                        </div>
+                    {% else %}
+                        <div class="color-error fs-small">
+                            {% datetime task.deadline show_words=False %}
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+
+        </div>
+    </div>
+</a>

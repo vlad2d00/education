@@ -1,0 +1,36 @@
+<div class="navigation">
+    <div class="card">
+        <div class="content-width-tiny">
+            {% for nav in navigation %}
+                {% if nav.for_admin and request.user.is_staff or not nav.for_admin %}
+
+                    {% if nav.add_line %}
+                        <hr class="mv-small">
+                    {% endif %}
+
+                    {% if nav.url_name == 'user' %}
+                        <a class="navigation-item highlight-on-hover"
+                           href="{% url 'user' username %}">
+                    {% else %}
+                        <a class="navigation-item highlight-on-hover"
+                           href="{% url nav.url_name %}">
+                    {% endif %}
+
+                        <div class="icon-normal svg-link">{% include nav.image_name %}</div>
+                        <div class="navigation-item-title">{{ nav.title }}</div>
+                        {% if nav.count_notice %}
+                            <div class="navigation-item-indicator">
+                                {% if nav.count_notice < 100 %}
+                                    {{ nav.count_notice }}
+                                {% else %}
+                                    99+
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </a>
+                {% endif %}
+            {% endfor %}
+
+        </div>
+    </div>
+</div>

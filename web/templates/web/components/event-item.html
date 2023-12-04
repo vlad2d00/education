@@ -1,0 +1,18 @@
+{% load static %}
+{% load mytags %}
+
+<a class="row pv-small-plus highlight-on-hover v-center" href="{% url 'event' event.id %}">
+    <div class="col ml-normal">
+        {% if event.image_url %}
+            <img class="icon-medium-round" src="{{ event.image_url }}" alt="Событие">
+        {% else %}
+            <div class="icon-medium color-secondary">
+                {% include "web/images/calendar.html" %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="ml-normal">
+        {{ event.name }}
+    </div>
+</a>

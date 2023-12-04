@@ -1,0 +1,122 @@
+{% extends 'web/pages/basic.html' %}
+{% load static %}
+{% load mytags %}
+
+{% block content %}
+    <div class="col">
+        <div class="card card-middle">
+            <div class="content title text-center">О достижениях</div>
+            <hr class="mv-normal">
+
+            <div class="content">
+                <p>
+                    <b>Достижение</b> — это показатель того, что вы чего-то достигли.
+                    Чем больше у вас достижений, тем больших результатов вы достигли и тем выше ваш <b>личный ранг</b>.
+                </p>
+                <p class="mt-small">
+                    Достижения можно получить как за <b>выполнение заданий</b>, список которых можно увидеть ниже,
+                    так и за то, что вы как-то <b>проявили себя</b> во время учебного курса.
+                </p>
+                <p class="mt-small">
+                    Достижения бывают следующих уровней:
+                    <p class="inline bold color-ordinary">обычные</p>,
+                    <p class="inline bold color-unusual">необычные</p>,
+                    <p class="inline bold color-rare">редкие</p>,
+                    <p class="inline bold color-unique">уникальные</p> и
+                    <p class="inline bold color-legendary">легендарные</p>.
+                </p>
+                <p class="mt-small">
+                    Так же есть и <b>рейтинговые достижения</b>, которые выдаются за вхождение в ТОП лучших
+                    в рейтинге за период или за какое-то событие:
+                    <p class="inline bold color-copper">медные</p>,
+                    <p class="inline bold color-silver">серебряные</p> и
+                    <p class="inline bold color-gold">золотые</p>.
+                </p>
+            </div>
+        </div>
+
+        <div class="card card-middle relative">
+            <div class="content">
+                {% if request.user.is_staff %}
+                    {% admin_action_add request 'Achievement' is_absolute=True %}
+                {% endif %}
+                <div class="title text-center">{{ title }}</div>
+            </div>
+            <hr class="mv-normal">
+
+            {% for achievement in achievements %}
+                <div class="content relative mt-normal">
+                    {% if request.user.is_staff %}
+                        {% admin_action_change request 'Achievement' achievement.id is_absolute=True %}
+                    {% endif %}
+
+                    <div class="row v-center">
+                        <div class="icon-medium-plus {% get_rank_css_class achievement.rank_code %}">
+                            {% if achievement.icon_name %}
+                                {% svg achievement.icon_name %}
+                            {% else %}
+                                {% include 'web/images/trophy.html' %}
+                            {% endif %}
+                        </div>
+                        <div class="col ml-normal">
+                            <div class="bold">
+                                {{ achievement.name }}
+                                {% if achievement.received %}
+                                    <div class="inline color-special ml-normal">(получено)</div>
+                                {% endif %}
+                                {% if achievement.is_new %}
+                                    <div class="inline color-special ml-normal">(новое)</div>
+                                {% endif %}
+                            </div>
+                            {% if achievement.description %}
+                                <div class="color-secondary">{{ achievement.description }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mt-small">
+                        {% for level in achievement.levels %}
+                            <div class="row mt-tiny">
+                                <div class="mr-small">
+                                    {% if request.user.is_staff %}
+                                        {% admin_action_change request 'AchievementLevel' level.id %}
+                                    {% endif %}
+                                </div>
+
+                                <div class="mt-tiny {% if level.received %}line-through{% endif %}">
+                                    <div class="inline {% get_rank_css_class level.rank_code %}">
+                                        {% if level.name %}{{ level.name }}.{% elif achievement.levels|length == 1 %}Задание.{% else %}{{ forloop.counter }} ур.{% endif %}
+                                    </div>
+
+                                    <div class="inline">{{ level.description }}</div>
+                                    {% if level.badge_awarded %}
+                                        <div class="inline italic
+                                             {% if not level.received %}underline tooltip tooltip-long{% endif %}">
+                                            (награда: значок)
+                                            <span class="tooltip-text">
+                                                За получение этого достижения выдается значок.
+                                            </span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+                <hr class="mt-medium">
+            {% endfor %}
+        </div>
+    </div>
+
+{#    <div content="col">#}
+{#        <div class="card card-right">#}
+{#            <div class="content title text-center">Фильтр</div>#}
+{#            <hr class="mv-normal">#}
+{##}
+{#            <div class="content message-secondary">Это позже</div>#}
+{#        </div>#}
+{#    </div>#}
+
+{% endblock %}

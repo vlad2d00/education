@@ -1,0 +1,27 @@
+{% load static %}
+
+{% if request.user.is_staff %}
+
+    {% if is_absolute %}
+    <div class="absolute-right">
+        <div class="content">
+    {% endif %}
+            <a {% if obj_id %}
+                href="{% url url_name obj_id %}" {% else %} href="{% url url_name %}" {% endif %}
+               target="_blank">
+
+                <div class="color-secondary link icon-normal {% if is_absolute %} right {% endif %}">
+                    {% if action_name == 'add' %}
+                        {% include "web/images/circle-plus.html" %}
+                    {% elif action_name == 'change' %}
+                        {% include "web/images/edit.html" %}
+                    {% endif %}
+                </div>
+            </a>
+
+    {% if is_absolute %}
+        </div>
+    </div>
+    {% endif %}
+
+{% endif %}

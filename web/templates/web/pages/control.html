@@ -1,0 +1,16 @@
+{% extends 'web/pages/basic.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="col">
+        <div class="card card-middle">
+            <div class="content title text-center">{{ title }}</div>
+            <hr class="mv-normal">
+
+            <div class="content">
+                <div class="message-secondary">Только для администраторов</div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

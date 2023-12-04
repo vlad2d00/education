@@ -1,0 +1,20 @@
+{% extends 'web/pages/basic.html' %}
+{% load static %}
+
+{% block content %}
+
+    {% if hide_navigation %}
+    <div class="card card-middle h-center">
+    {% else %}
+    <div class="card card-middle">
+    {% endif %}
+
+        <div class="content title text-center color-error">{{ title }}</div>
+        <hr class="mv-normal">
+
+        <div class="content">
+            <img class="image-card mt-normal" src="{% static 'web/images/not_found.gif' %}" alt="Не найдено">
+        </div>
+    </div>
+
+{% endblock %}

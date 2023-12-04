@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+{% load static %}
+{% load mytags %}
+
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="{% static 'web/images/logo.png' %}">
+    <link type="text/css" href="{% static 'web/css/styles.css' %}" rel="stylesheet">
+
+    {% block links %} {% endblock %}
+
+    <title>{{ title }}</title>
+</head>
+
+<body>
+    {% if not hide_header %}
+    <header>
+        <div class="container header-container">
+            <!-- Логотип -->
+            <a href="{% url 'home' %}">
+                <div class="icon-medium link">
+                    {% include "web/images/logo.html" %}
+                </div>
+            </a>
+
+            <div class="header-title">{% get_header %}</div>
+
+            <div class="header-auth">
+                <!-- Профиль -->
+                {% if request.user.is_authenticated %}
+                    <!-- Уведомления -->
+                    {% get_count_notice request as count_notice %}
+                    <a class="header-button-notices highlight-on-hover" href="{% url 'notices' %}">
+                        <div class="header-notices">
+                            <div class="icon-normal-plus">
+                                {% include "web/images/bell.html" %}
+                                {% if count_notice %}
+                                    <div class="header-notices-indicator">
+                                        {% if count_notice < 100 %}
+                                            {{ count_notice }}
+                                        {% else %}
+                                            99
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Полное имя пользователя -->
+                    <div class="header-user-fullname">
+                        {{ request.user.first_name }} {{ request.user.last_name }}
+                    </div>
+
+                    <!-- Аватарка пользователя -->
+                    {% user_image request %}
+
+                    <!-- Выход -->
+                    <form method="post" action="{% url 'logout' %}"
+                          onsubmit="return confirm('Вы действительно хотите выйти из аккаунта?');">
+
+                        <button class="link" type="submit">
+                            <div class="icon-normal link ml-normal">
+                                {% include "web/images/logout.html" %}
+                            </div>
+                        </button>
+                    </form>
+
+                {% else %}
+                    <!-- Авторизация -->
+                    <a class="link" href="{% url 'login' %}">Войти</a>
+                    <a class="link ml-normal" href="{% url 'register' %}">Регистрация</a>
+                {% endif %}
+            </div>
+
+        </div>
+    </header>
+    {% endif %}
+
+    {% if hide_header %}
+    <div class="main container">
+    {% else %}
+    <div class="main container margin-header">
+    {% endif %}
+
+        {% if request.user.is_authenticated and not hide_navigation %}
+            <div class="col">
+                {% navigation request %}
+                {% technical_work %}
+            </div>
+        {% endif %}
+
+        <!-- Основной контент -->
+        {% block content %} {% endblock %}
+    </div>
+
+</body>
+</html>

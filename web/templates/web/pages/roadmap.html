@@ -1,0 +1,32 @@
+{% extends 'web/pages/basic.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="col">
+        <div class="card card-middle">
+            <div class="content title text-center">{{ title }}</div>
+            <hr class="mv-normal">
+
+            <div class="content">
+                <div>
+                    <b>Дорожная карта</b> — это карта пути, по которому мы вместе идем в течение нашего курса.
+                    Каждая отмеченная точка на карте — тема, которую мы будем проходить.
+                </div>
+                <div class="mt-small">
+                    Если точка ответвляется от основного пути, значит это дополнительная тема,
+                    которую мы будем проходить, если на нее хватит времени.
+                </div>
+                <div class="mt-small">
+                    Открывайте полную версию карты и изучайте подробнее.
+                </div>
+
+                <a href="{% static 'web/images/roadmap.jpg' %}" target="_blank">
+                    <div class="row mt-normal">
+                        <button class="button button-primary h-center" type="submit">Открыть полную версию</button>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

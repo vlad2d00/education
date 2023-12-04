@@ -1,0 +1,47 @@
+{% extends 'web/pages/basic.html' %}
+{% load static %}
+{% load mytags %}
+
+{% block content %}
+    <div class="col">
+        <div class="card card-middle">
+            <div class="content relative">
+                {% if request.user.is_staff %}
+                    {% admin_action_change request 'Post' post.id is_absolute=True %}
+                {% endif %}
+                <div class="title text-center">{{ post.header }}</div>
+            </div>
+            <hr class="mv-normal">
+
+            <div class="content">
+                {% autoescape off %}
+                    {{ post.text|linebreaksbr }}
+                {% endautoescape %}
+
+                {% post_footer hashtag_list=post.hashtags count_views=post.count_views datetime_create=post.datetime_create %}
+            </div>
+
+            <hr class="mv-normal">
+            <div class="content row">
+                <div class="row h-center">
+                    {% if prev_post_id %}
+                        <a class="button button-secondary mr-large" href="{% url 'post' prev_post_id %}">Назад</a>
+                    {% else %}
+                        <a class="button button-secondary mr-large hidden" href="">Назад</a>
+                    {% endif %}
+
+                    <a class="button button-secondary" href="{% url 'home' %}">На главную</a>
+
+                    {% if next_post_id %}
+                        <a class="button button-secondary ml-large" href="{% url 'post' next_post_id %}">Вперед</a>
+                    {% else %}
+                        <a class="button button-secondary ml-large hidden" href="">Вперед</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'web/pages/basic.html' %}
+{% load static %}
+{% load mytags %}
+
+{% block content %}
+    <div class="col">
+        <div class="card card-middle">
+            <div class="content relative">
+                {% if request.user.is_staff %}
+                    {% admin_action_add request 'Link' is_absolute=True %}
+                {% endif %}
+                <div class="title text-center">{{ title }}</div>
+            </div>
+
+            {% if link_groups %}
+                <div class="message-secondary">
+                    {% for group in link_groups %}
+                        <hr class="mv-normal">
+                        <div class="content">
+
+                            <div class="row mt-normal v-center">
+                                <div class="subtitle ">{{ group.name }}</div>
+                                {% if request.user.is_staff %}
+                                    <div class="ml-normal">
+                                        {% admin_action_change request 'LinkGroup' group.id %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {% for link in group.links %}
+                                <div class="row mt-normal">
+                                    <div class="inline">
+                                        <div class="color-secondary inline">{{ forloop.counter }}.</div>
+                                        <a class="link inline" href="{{ link.url }}" target="_blank">
+                                            {{ link.name }}</a><div class="inline">. {{ link.description }}</div>
+                                    </div>
+
+                                    {% if request.user.is_staff %}
+                                        <div class="ml-normal">
+                                            {% admin_action_change request 'Link' link.id %}
+                                        </div>
+                                    {% endif %}
+
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+            {% else %}
+                <hr class="mv-normal">
+                <div class="content message-secondary">Не добавлено ни одной ссылки</div>
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

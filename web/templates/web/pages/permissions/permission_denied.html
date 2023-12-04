@@ -1,0 +1,20 @@
+{% extends 'web/pages/basic.html' %}
+{% load static %}
+
+{% block content %}
+
+    {% if hide_navigation %}
+    <div class="card card-middle h-center">
+    {% else %}
+    <div class="card card-middle">
+    {% endif %}
+
+        <div class="content title text-center">{{ title }}</div>
+        <hr class="mv-normal">
+
+        <div class="content">
+            <img class="image-card mt-normal" src="{% static 'web/images/stop.jpg' %}" alt="Доступ запрещен">
+        </div>
+    </div>
+
+{% endblock %}

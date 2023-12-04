@@ -1,0 +1,133 @@
+{% extends 'web/pages/basic.html' %}
+{% load static %}
+{% load mytags %}
+
+{% block content %}
+    <div class="col">
+        <div class="card card-middle">
+            <div class="content relative">
+                {% if request.user.is_staff %}
+                    {% admin_action_change request 'Project' project.id is_absolute=True %}
+                {% endif %}
+                <div class="title text-center">{{ title }}</div>
+            </div>
+            <hr class="mv-normal">
+
+            {% get_project_status_code_list as project_statuses %}
+
+            <div class="content">
+                {% if saved %}
+                    <div class="message-success mb-normal">Данные успешно обновлены</div>
+                {% endif %}
+
+                {% if project.status_code <= project_statuses.APPROVAL %}
+                    <div class="mb-normal">
+                        Выберите тему своего проекта и впишите ее в соответствующее поле.
+                        Так же создайте Google-документ, опишите там суть вашей темы, возможные идеи,
+                        прикрепите нужные материалы (например, скриншоты готовых проектов,
+                        на которые вы хотели бы опираться)
+                        и вставьте ссылочку в поле ниже.
+                    </div>
+                {% endif %}
+
+                <div class="row">
+                    <div class="form-label mr-small">Статус проекта:</div>
+                    <div class="{% get_project_status_css_class project.status_code %}">
+                        {% get_project_status_name project.status_code as project_status_name %}
+                        {{ project_status_name|lower }}
+                    </div>
+                </div>
+
+                <form action="{% url 'project' project.id %}" method="post">
+                    {% csrf_token %}
+                    <div class="form-errors">{{ project_form.non_field_errors }}</div>
+
+                    {% if project.status_code <= project_statuses.APPROVAL %}
+                        <div class="mt-normal">
+                            <div class="col mt-medium">
+                                <label class="form-label" for="{{ project_form.name.id_for_label }}">
+                                    {{ project_form.name.label }}
+                                </label>
+                                <div class="mt-small form-normal">
+                                    <label>{{ project_form.name }}</label>
+                                </div>
+                            </div>
+                            <div class="form-help-text">{{ project_form.name.help_text }}</div>
+                            <div class="form-errors">{{ project_form.name.errors }}</div>
+                        </div>
+                    {% endif %}
+
+                    <div class="mt-normal">
+                        <div class="col mt-medium">
+                            <label class="form-label" for="{{ project_form.document_url.id_for_label }}">
+                                {{ project_form.document_url.label }}
+                            </label>
+                            <div class="mt-small form-normal">
+                                <label>{{ project_form.document_url }}</label>
+                            </div>
+                        </div>
+                        <div class="form-help-text">{{ project_form.document_url.help_text }}</div>
+                        <div class="form-errors">{{ project_form.document_url.errors }}</div>
+                    </div>
+
+                    {% if project.status_code >= project_statuses.DESIGN_DEVELOPMENT %}
+                        <div class="mt-normal">
+                            <div class="col mt-medium">
+                                <label class="form-label" for="{{ project_form.figma_url.id_for_label }}">
+                                    {{ project_form.figma_url.label }}
+                                </label>
+                                <div class="mt-small form-normal">
+                                    <label>{{ project_form.figma_url }}</label>
+                                </div>
+                            </div>
+                            <div class="form-help-text">{{ project_form.figma_url.help_text }}</div>
+                            <div class="form-errors">{{ project_form.figma_url.errors }}</div>
+                        </div>
+                    {% endif %}
+
+                    {% if project.status_code >= project_statuses.USE_CASE_DEVELOPMENT %}
+                        <div class="mt-normal">
+                            <div class="col mt-medium">
+                                <label class="form-label" for="{{ project_form.drawio_url.id_for_label }}">
+                                    {{ project_form.drawio_url.label }}
+                                </label>
+                                <div class="mt-small form-normal">
+                                    <label>{{ project_form.drawio_url }}</label>
+                                </div>
+                            </div>
+                            <div class="form-help-text">{{ project_form.drawio_url.help_text }}</div>
+                            <div class="form-errors">{{ project_form.drawio_url.errors }}</div>
+                        </div>
+                    {% endif %}
+
+                    {% if project.status_code >= project_statuses.APP_DEVELOPMENT %}
+                        <div class="mt-normal">
+                            <div class="col mt-medium">
+                                <label class="form-label" for="{{ project_form.github_url.id_for_label }}">
+                                    {{ project_form.github_url.label }}
+                                </label>
+                                <div class="mt-small form-normal">
+                                    <label>{{ project_form.github_url }}</label>
+                                </div>
+                            </div>
+                            <div class="form-help-text">{{ project_form.github_url.help_text }}</div>
+                            <div class="form-errors">{{ project_form.github_url.errors }}</div>
+                        </div>
+                    {% endif %}
+
+                    <div class="row mt-normal">
+                        <div class="h-center">
+                            <button class="button button-primary" type="submit" name="confirm">
+                                Подтвердить
+                            </button>
+                            <button class="button button-secondary ml-medium" type="submit" name="cancel">
+                                Отменить
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

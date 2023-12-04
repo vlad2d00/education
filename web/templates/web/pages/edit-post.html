@@ -1,0 +1,52 @@
+{% extends 'web/pages/basic.html' %}
+{% load static %}
+{% load mytags %}
+
+{% block content %}
+    <div class="col">
+        <div class="card card-middle">
+            <div class="content title">{{ post.header }}</div>
+
+            <div class="content">
+                {% autoescape off %}
+                    <div class="mt-normal">{{ post.text|linebreaksbr }}</div>
+                {% endautoescape %}
+
+                <div class="row mt-normal">
+                    <div class="icon-small color-secondary">
+                        {% include "web/images/eye.html" %}
+                    </div>
+                    <div class="color-secondary ml-small">{{ post.count_views }}</div>
+
+                    <div class="row right">
+                        <div class="fs-small color-secondary">
+                            {% datetime post.datetime_create %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="mv-normal">
+            <div class="content row">
+                <div class="row h-center">
+                    {% if prev_post_id %}
+                        <a class="button button-secondary mr-large" href="{% url 'post' prev_post_id %}">Назад</a>
+                    {% else %}
+                        <a class="button button-secondary mr-large hidden" href="">Назад</a>
+                    {% endif %}
+
+                    <a class="button button-secondary" href="{% url 'home' %}">На главную</a>
+
+                    {% if next_post_id %}
+                        <a class="button button-secondary ml-large" href="{% url 'post' next_post_id %}">Вперед</a>
+                    {% else %}
+                        <a class="button button-secondary ml-large hidden" href="">Вперед</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+{% endblock %}

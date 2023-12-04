@@ -1,0 +1,176 @@
+{% extends 'web/pages/basic.html' %}
+{% load static %}
+{% load mytags %}
+
+{% block content %}
+    <div class="col">
+        <div class="card card-middle">
+            {% get_system as system %}
+
+            <div class="content title text-center">
+                {% if system %}
+                    Список группы
+                {% else %}
+                    {{ title }}
+                {% endif %}
+            </div>
+            <hr class="mv-normal">
+
+            {% if system.hide_rating and not request.user.is_staff %}
+                <div class="content">
+                    {% for user in rating_students %}
+                        <div class="row v-center">
+                            <a class="link" href="{% url 'user' user.username %}">
+                                <img class="icon-normal-plus-round"
+                                     src="{% if user.image.url %}{{ user.image.url }}{% else %}{% static 'web/images/default_avatar.jpg' %}{% endif %}"
+                                     alt="Аватарка профиля">
+                            </a>
+                            <a class="link ml-normal" href="{% url 'user' user.username %}">
+                                {{ user.full_name }}
+                            </a>
+
+                            <div class="message-secondary ml-small">({{ user.student.level }} ур.)</div>
+                            {% if user.id == request.user.id %}
+                                <div class="message-secondary bold ml-small">(Вы)</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <div class="message-secondary mt-normal">
+                        Вы видите здесь только список группы потому, что рейтинг был скрыт администратором.
+                    </div>
+                </div>
+
+            {% elif rating_students %}
+                <div class="table-rating">
+                    <div class="row row-header">
+                        <div class="col col-position">Место</div>
+                        <div class="col col-user">Студент</div>
+                        <div class="col col-points">Баллы</div>
+                    </div>
+
+                    {% for user in rating_students %}
+                        <div class="row
+                        {% if user.id == request.user.id %} row-content-you {% else %} row-content {% endif %}">
+
+                            <!-- Позиция в рейтинге -->
+                            <div class="col col-position">
+                                {{ forloop.counter }}
+{#                                {% if user.student.change_of_position > 0 %}#}
+{#                                    <div class="increase">(+{{ user.student.change_of_position }})</div>#}
+{#                                {% elif user.student.change_of_position < 0 %}#}
+{#                                    <div class="decrease">({{ user.student.change_of_position }})</div>#}
+{#                                {% endif %}#}
+                            </div>
+
+                            <!-- Аватарка и полное имя пользователя -->
+                            <div class="col col-user">
+                                <a class="link" href="{% url 'user' user.username %}">
+                                    <img class="icon-normal-plus-round"
+                                         src="{% if user.image_url %}{{ user.image_url }}{% else %}{% static 'web/images/default_avatar.jpg' %}{% endif %}"
+                                         alt="Аватарка профиля">
+                                </a>
+                                <a class="link ml-normal" href="{% url 'user' user.username %}">
+                                    {{ user.full_name }}
+                                </a>
+
+                                <div class="subcol-user-level">
+                                    <div class="message-secondary ml-small">({{ user.student.level }} ур.)</div>
+                                    {% if user.id == request.user.id %}
+                                        <div class="message-secondary bold ml-small">(Вы)</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Баллы -->
+                            <div class="col col-points">
+                                {{ user.student.points }}
+{#                                {% if user.student.change_of_points > 0 %}#}
+{#                                    <div class="increase">(+{{ user.student.change_of_points }})</div>#}
+{#                                {% elif user.student.change_of_points < 0 %}#}
+{#                                    <div class="decrease">({{ user.student.change_of_points }})</div>#}
+{#                                {% endif %}#}
+                            </div>
+
+                        </div>
+                    {% endfor %}
+                </div>
+
+            {% elif rating_form.data.student_group %}
+                <div class="content">
+                    <div class="message-secondary">Группа пустая</div>
+                </div>
+
+            {% else %}
+                <div class="content">
+                    <div class="message-secondary">Не найдено ни одного студента</div>
+                </div>
+
+            {% endif %}
+
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card card-right">
+            <div class="content title text-center">Фильтр</div>
+            <hr class="mv-normal">
+
+            <div class="content">
+                <form action="{% url 'rating' %}" method="get">
+                    <div class="form-errors">{{ rating_form.non_field_errors }}</div>
+
+                    <div class="form">
+                        <!-- Группа студентов -->
+                        {% if request.user.is_staff %}
+                            <label class="form-label" for="{{ rating_form.student_group.id_for_label }}">
+                                {{ rating_form.student_group.label }}
+                            </label>
+                            <div class="mt-small">
+                                <label>{{ rating_form.student_group }}</label>
+                            </div>
+                        {% endif %}
+
+                        <!-- Период времени изменений -->
+                        <div class="mt-normal">
+                            <label class="form-label">Изменение баллов за период:</label>
+                        </div>
+
+                        <div class="row mt-normal v-center">
+                            <label class="form-label" for="{{ rating_form.date_begin.id_for_label }}">
+                                {{ rating_form.date_begin.label }}
+                            </label>
+                            <div class="ml-normal">
+                                <label>{{ rating_form.date_begin }}</label>
+                            </div>
+                        </div>
+
+                        <div class="row mt-normal v-center">
+                            <label class="form-label" for="{{ rating_form.date_end.id_for_label }}">
+                                {{ rating_form.date_end.label }}
+                            </label>
+                            <div class="ml-normal">
+                                <label>{{ rating_form.date_end }}</label>
+                            </div>
+                        </div>
+
+                        <!-- Флаг установления типа сортировки -->
+                        <div class="row v-center mt-normal">
+                            <label>{{ rating_form.sort_by_points_change }}</label>
+                            <label for="{{ rating_form.sort_by_points_change.id_for_label }}">
+                                {{ rating_form.sort_by_points_change.label }}
+                            </label>
+                        </div>
+
+                        <div class="row">
+                            <!-- Кнопка -->
+                            <button class="button button-primary mt-normal h-center" type="submit">Обновить</button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

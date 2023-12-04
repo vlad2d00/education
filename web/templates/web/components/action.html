@@ -1,0 +1,14 @@
+{% load static %}
+
+<div class="absolute-right">
+    <div class="row mr-normal">
+        <a class="color-secondary link icon-normal right"
+            {% if param %}
+                href="{% url url_name param %}"
+            {% else %}
+                href="{% url url_name %}"
+            {% endif %}>
+            {% include image_url %}
+        </a>
+    </div>
+</div>

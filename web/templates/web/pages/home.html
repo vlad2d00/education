@@ -1,0 +1,141 @@
+{% extends 'web/pages/basic.html' %}
+{% load static %}
+{% load mytags %}
+
+{% block content %}
+    <div class="col">
+        <div class="card card-middle relative">
+            {% if request.user.is_staff %}
+                {% admin_action_add request 'Post' is_absolute=True %}
+            {% endif %}
+            <div class="content title text-center ">Посты</div>
+            <hr class="mt-normal">
+
+            {% if posts %}
+                {% for post in posts %}
+                    <a href="{% url 'post' post.id %}">
+                        <div class="content pv-normal highlight-on-hover">
+                            <div class="row">
+                                <div class="title">{{ post.header }}</div>
+                                {% if not post.viewed %}
+                                    <div class="right message-special">Новое</div>
+                                {% endif %}
+                            </div>
+
+                            {% if post.description %}
+                                {% autoescape off %}
+                                    <div class="mt-normal">{{ post.description|linebreaksbr }}</div>
+                                {% endautoescape %}
+                            {% endif %}
+
+                            {% post_footer hashtag_list=post.hashtag_list count_views=post.count_views datetime_create=post.datetime_create %}
+                        </div>
+                    </a>
+                    <hr>
+                {% endfor %}
+
+            {% else %}
+                <div class="content message-secondary mt-normal">Не выложено ни одного поста</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col">
+        {% if request.user.is_staff %}
+            <div class="card card-right">
+                <div class="content title text-center">Фильтр</div>
+                <hr class="mv-normal">
+
+            <div class="content">
+                <form action="{% url 'home' %}" method="get">
+                    <div class="form-errors">{{ filter_form.non_field_errors }}</div>
+
+                    <div class="form">
+                        <!-- Группа студентов -->
+                        <label class="form-label" for="{{ filter_form.student_group.id_for_label }}">
+                            {{ filter_form.student_group.label }}
+                        </label>
+                        <div class="mt-small">
+                            <label>{{ filter_form.student_group }}</label>
+                        </div>
+
+                        <!-- Метка выбора только актуального -->
+                        <div class="row v-center mt-normal">
+                            <label>{{ filter_form.only_current }}</label>
+                            <label for="{{ filter_form.only_current.id_for_label }}">
+                                {{ filter_form.only_current.label }}
+                            </label>
+                        </div>
+
+                        <div class="row">
+                            <button class="button button-primary mt-normal h-center" type="submit">Обновить</button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+
+            </div>
+        {% endif %}
+
+        {% if events or request.user.is_staff %}
+            <div class="card card-right relative">
+                {% if request.user.is_staff %}
+                    {% admin_action_add request 'Event' is_absolute=True %}
+                {% endif %}
+                <div class="content title text-center">События</div>
+                <hr class="mv-normal">
+
+                {% if events %}
+                    {% for event in events %}
+                        {% event_item event %}
+                    {% endfor %}
+
+                {% else %}
+                    <div class="content message-secondary">Событий нет</div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if tests or request.user.is_staff %}
+            <div class="card card-right relative">
+                {% if request.user.is_staff %}
+                    {% admin_action_add request 'Test' is_absolute=True %}
+                {% endif %}
+                <div class="content title text-center">Тестирования</div>
+                <hr class="mv-normal">
+
+                {% if tests %}
+
+                {% else %}
+                    <div class="content message-secondary">Доступных тестирований нет</div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <div class="card card-right relative">
+            {% if request.user.is_staff %}
+                {% admin_action_add request 'Task' is_absolute=True %}
+            {% endif %}
+            <div class="content title text-center">Задания</div>
+            <hr class="mv-normal">
+
+            {% if tasks_by_sections %}
+                {% for task_section in tasks_by_sections %}
+                    {% if task_section.tasks %}
+                        <div class="task-group">
+                            <div class="content subtitle mt-normal mb-small">{{ task_section.name }}</div>
+                            {% for task in task_section.tasks %}
+                                {% task_item task %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+            {% else %}
+                <div class="content message-secondary">Заданий нет — отдыхайте</div>
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}
